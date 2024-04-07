@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Generate Password</title>
+        <link rel="icon" href="passowrd.png" type="image.png">  
+        <style>
+            *{
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body{
+                display: flex;  
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                background-image: url(background.avif);
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: cover;
+            }
+
+            .generate-password-container {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+                padding: 50px;
+                width: 50%;
+                background-color: rgba(255, 255, 255, 0.2); /* Transparent white background color */
+                backdrop-filter: blur(10px); /* Apply blur effect */
+                -webkit-backdrop-filter: blur(10px); /* For Safari */
+                border-radius: 10px;
+
+                font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+
+            label,input, p{
+                font-size: 1.5em;
+                font-weight: bold;
+                color: white;
+                margin: 10px;
+            }
+            p{
+                color: rgb(222, 217, 217);
+            }
+
+            input{ 
+                width: 200px;
+                border: none;
+                outline: none;
+                background-color: transparent;
+                border-bottom: 3px solid black;
+                text-align: center;
+            }
+
+            .generate{
+                padding: 10px 30px;
+                border-radius: 10px;
+                background-color: black;
+
+                font-size: 1.2em;
+                font-weight: bold;
+                color: white;
+                border: 2px solid white;
+
+                transition: all 0.5s ease;
+            }
+
+            .generate:hover {
+                color: black;
+                background-color: white;
+                border: 2px solid black;
+                transform: scale(1.1);
+            }
+
+            .generate:active{
+                background-color: rgb(51, 50, 50);
+                color: white;
+            }
+
+            .result-container {
+                display: flex;
+            }
+
+            .result-container p{
+                flex: 1px;
+            }
+
+            .radio-container {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            input[type="radio"]{
+                height: 15px;
+                width: 15px;
+            }
+
+            .copy{
+                background-image: url(copy.png);
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: contain;
+                height: 50px;
+                width: 50px;
+                border: none;
+                background-color: transparent;
+                transition: transform 0.5s ease;
+                display: none;
+            }
+            .copy:active {
+                transform: scale(1.2);
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="generate-password-container">
+            <div>
+                <label for="lengthPass">Password Length:</label>
+                <input type="text" id="lengthPass">
+                <button id="generate" class="generate">Generate</button>
+            </div>
+            <div class="radio-container">
+                <div>
+                    <input type="radio" id="upperCase">
+                    <label for="upperCase">Upper Case</label>
+                </div>
+    
+                <div>
+                    <input type="radio" id="lowerCase"> 
+                    <label for="lowerCase">Lower Case</label>
+                </div>
+    
+                <div>
+                    <input type="radio" id="symbol">
+                    <label for="symbol">Symbol</label>
+                </div>
+    
+                <div>
+                    <input type="radio" id="numbers">
+                    <label for="numbers">Numbers</label>
+                </div>
+            </div>
+    
+            <div class="result-container">
+                <label>Result:</label>
+                <p id="result"></p>
+                <button id="copy" class="copy"></button>
+            </div>
+        </div>
+        
+
+        <script>
+            let inputPasswordLength = document.getElementById("lengthPass");
+            let includeUpperCase = document.getElementById("upperCase");
+            let includeLowerCase = document.getElementById("lowerCase");
+            let includeSymbol = document.getElementById("symbol");
+            let includeNumbers = document.getElementById("numbers");
+            let result = document.getElementById("result");
+
+
+            let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+            let symbols = ["~", "!", "#", "$", "%", "^", "&", "*", "(", ")", "-"];
+            let letters = ["a","b","c","d","e","f","g","h","i","j", "k", "l","m","n","o","p","q","r","s","t","u","v","w","x","y","z",];
+            let lengthOfPassword;
+
+            inputPasswordLength.focus();
+
+            document.getElementById("generate").addEventListener("click", function(){
+                lengthOfPassword = Number(inputPasswordLength.value);
+                if(isNaN(lengthOfPassword)){
+                    result.textContent = "Please input a valid number";
+                    inputPasswordLength.value = "";
+                    inputPasswordLength.focus();
+                    result.style.color = "red";
+                    return;
+                    document.getElementById("copy").style.display = "none";
+                }else if(lengthOfPassword < 8){
+                    inputPasswordLength.value = "";
+                    inputPasswordLength.focus();
+                    result.textContent = "Password length must be 8 char";
+                    result.style.color = "red";
+                    document.getElementById("copy").style.display = "none";
+                    return;
+                }else if(!includeUpperCase.checked && !includeLowerCase.checked && !includeSymbol.checked && !includeNumbers.checked){
+                    result.textContent = "You need to pick your pass include";
+                    result.style.color = "red";
+                    document.getElementById("copy").style.display = "none";
+                }
+                else{
+                    result.textContent = generatePassword(lengthOfPassword);
+                    result.style.color = "black";
+                    !includeLowerCase.checked;
+                    document.getElementById("copy").style.display = "flex";
+                }
+
+                document.querySelectorAll('input[type="radio"]').forEach(radioButton => {
+                    radioButton.checked = false;
+                });
+                })
+
+            function generatePassword(length){
+                let charset = [];
+
+                if(includeUpperCase.checked){
+                    letters.forEach(letter => {
+                    charset.push(letter.toUpperCase());
+                });
+                }
+
+                if(includeLowerCase.checked){
+                    charset = charset.concat(letters);
+                }
+
+                if(includeNumbers.checked){
+                    charset = charset.concat(numbers);
+                }
+
+                if(includeSymbol.checked){
+                    charset = charset.concat(symbols);
+                }
+
+                let password = "";
+
+                for(let i = 0; i < length; i++){
+                    let ramdonIndex = Math.floor(Math.random() * charset.length);
+
+                    password += charset[ramdonIndex];
+                }
+                return password;
+            }
+            document.getElementById("copy").addEventListener("click", function(){
+                copyToClipboard(result.innerText);
+                alert("Successfully copied");
+            })
+
+            function copyToClipboard(text) {
+                let textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                textarea.setSelectionRange(0, textarea.value.length);
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+        </script>
+    </body>
+</html>
